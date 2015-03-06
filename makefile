@@ -1,4 +1,4 @@
-CC = g++
+CC = g++ -Wall
 
 all:
 	$(CC) $(INCLUDES) STC3105.cpp I2Cdev.cpp -o testSTC

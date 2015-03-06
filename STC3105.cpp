@@ -1,8 +1,9 @@
 #include "STC3105.h"
 
-STC3105::STC3105(uint8_t address)
+STC3105::STC3105(uint8_t address, float sense_resistor)
 {
 	this->devAddr = address;
+	this->sense_resistor = sense_resistor;
 	voltage = 0;
 	current = 0;
 }
@@ -22,44 +23,17 @@ void STC3105::initialize()
 
 void STC3105::enableOperatingMode(bool enable)
 {
-	uint8_t mode_reg = 0;
-
-	// read current mode register state
-	I2Cdev::readByte(devAddr, STC3105_REG_MODE, &mode_reg);
-
-	// change the corresponding bit
-	mode_reg = enable ? (mode_reg | (1 << 4)) : (mode_reg & ~(1 << 4));
-
-	// write new mode register value
-	I2Cdev::writeByte(devAddr, STC3105_REG_MODE, mode_reg);
+	I2Cdev::writeBit(devAddr, STC3105_REG_MODE, 4, enable ? 1 : 0);
 }
 
 void STC3105::enablePowerSaving(bool enable)
 {
-	uint8_t mode_reg = 0;
-
-	// read current mode register state
-	I2Cdev::readByte(devAddr, STC3105_REG_MODE, &mode_reg);
-
-	// change the corresponding bit
-	mode_reg = enable ? (mode_reg | (1 << 2)) : (mode_reg & ~(1 << 2));
-
-	// write new mode register value
-	I2Cdev::writeByte(devAddr, STC3105_REG_MODE, mode_reg);
+	I2Cdev::writeBit(devAddr, STC3105_REG_MODE, 2, enable ? 1 : 0);
 }
 
 void STC3105::enableAlarm(bool enable)
 {
-	uint8_t mode_reg = 0;
-
-	// read current mode register state
-	I2Cdev::readByte(devAddr, STC3105_REG_MODE, &mode_reg);
-
-	// change the corresponding bit
-	mode_reg = enable ? (mode_reg | (1 << 3)) : (mode_reg & ~(1 << 3));
-
-	// write new mode register value
-	I2Cdev::writeByte(devAddr, STC3105_REG_MODE, mode_reg);	
+	I2Cdev::writeBit(devAddr, STC3105_REG_MODE, 3, enable ? 1 : 0);
 }
 
 float STC3105::readVoltage()
@@ -70,21 +44,25 @@ float STC3105::readVoltage()
 	I2Cdev::readBytes(devAddr, STC3105_REG_VOLTAGE_LOW, 2, data);
 	vlt = data[1] << 8 | data[0];
 
-	return voltage = 0.00244 * (float)vlt;
+	voltage = 0.00244 * (float)vlt;
+
+	return voltage;
 }
 
 float STC3105::readCurrent()
 {
 	uint8_t data[2] = {0, 0}; // TO READ
 	int crt = 0;
+	float voltage_drop;
 
 	I2Cdev::readBytes(devAddr, STC3105_REG_CURRENT_LOW, 2, data);
 	crt = data[1] << 8 | data[0];
 
-	return current = 0.000001 * 11.77 * (float)crt;
+	// on the sense resistor
+	voltage_drop = 0.000001 * 11.77 * (float)crt;
+
+	return current / sense_resistor;
 }
-
-
 
 float STC3105::getVoltage()
 {

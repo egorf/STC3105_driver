@@ -22,7 +22,9 @@
 #define STC3105_REG_ALARM_VOLTAGE	0x14 // R/W Battery low voltage alarm level
 #define STC3105_REG_CURRENT_THRES	0x15 // R/W Current threshold for the voltage relaxation counter
 #define STC3105_REG_RELAX_COUNT		0x16 // R Voltage relaxation counter
+
 #define STC3105_REG_ID				0x18 // R Part type ID = 12h
+
 #define STC3105_REG_RAM0 			0x20 // R/W Working register 0 for gas gauge
 // ...
 // ...
@@ -30,17 +32,39 @@
 
 class STC3105 {
 	public:
-		STC3105(uint8_t address = STC3105_DEFAULT_ADDRESS);
+		STC3105(uint8_t address = STC3105_DEFAULT_ADDRESS, float sense_resistor = 0.03);
 
 		void initialize();
 		bool testConnection();
 
+		// MODE REGISTER
 		void enableOperatingMode(bool enable = true);
-		void enablePowerSaving(bool enable = true);
-		void enableAlarm(bool enable = true);
+		void enablePowerSaving(bool enable = true); // In power-saving mode, the current is measured only half of the time.  
+		void enableAlarm(bool enable = true); // Enables alarm function
 
-		float readVoltage();
-		float readCurrent();
+		// CONTROL REGISTER
+		// Alarm functions
+		// TODO
+		void enableAlarmPin(bool enable = true); // Enables alarm driven pin
+		bool checkAlarmPin(); // Check alarm pin state, LOW STATE MEANS ALARM!!!
+		bool checkLowVoltageReg(); // Check alarm state for low battery voltage
+		void clearLowVoltageReg(); // Clear low voltage alarm flag
+		bool checkLowSOCReg(); // Check alarm state for low State-of-Charge
+		void clearLowSOCReg(); // Clear low State-Of-Charge alarm flag
+
+		// Reset functions
+		// TODO
+		void reset(); // resets the charge accumulator and conversion counter
+		void soft_reset(bool enable = true); // assert the soft-reset and the Power-On-Reset detection bit 
+		bool readPowerOnReset(); // read Power-On-Reset state
+
+		// Data updated?
+		// TODO
+		bool voltageUpdated(); // check if voltage has been updated since the last read
+		bool currentUpdated(); // check if current has been updated since the last read d
+
+		float readVoltage(); // Info updated every 4 seconds with 2.44 mV resolution
+		float readCurrent(); // Info updated every 0.5 seconds with 11.77 μV resolution
 
 		float getVoltage();
 		float getCurrent();
@@ -49,4 +73,5 @@ class STC3105 {
 		uint8_t devAddr;
 		float voltage;
 		float current;
+		float sense_resistor;
 };
