@@ -64,14 +64,24 @@ class STC3105 {
 
 		// Data functions
 		float readVoltage(); // Info updated every 4 seconds with 2.44 mV resolution
-		float readCurrent(); // Info updated every 0.5 seconds with 11.77 μV resolution
+		float readCurrent(); // Info updated every second with 11.77 μV voltage drop resolution
+		float readStateOfCharge(); // Info updated every current conversion cycle with 6.70 μV.h voltage drop resolution
+		int readNumberOfConversions(); // The number of conversions is reset after each powerdown
+
+		uint16_t readStateOfChargeBase();
+		void writeStateOfChargeBase(uint16_t data);
 
 		float getVoltage();
 		float getCurrent();
+		float getStateOfCharge();
+		int getNumberOfConversions();
 
 	private:
-		uint8_t devAddr;
-		float voltage;
-		float current;
-		float sense_resistor;
+		uint8_t devAddr; // default 0x70
+		float sense_resistor; // in ohms
+
+		float voltage; // V
+		float current; // A
+		float state_of_charge; // A.h
+		int number_of_conversions; 
 };

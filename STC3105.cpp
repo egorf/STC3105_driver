@@ -129,16 +129,61 @@ float STC3105::readVoltage()
 float STC3105::readCurrent()
 {
 	uint8_t data[2] = {0, 0}; // TO READ
-	int crt = 0;
+	uint16_t vlt = 0;
 	float voltage_drop;
 
 	I2Cdev::readBytes(devAddr, STC3105_REG_CURRENT_LOW, 2, data);
-	crt = data[1] << 8 | data[0];
+	vlt = data[1] << 8 | data[0]; // The current data is in two's complement code
+
+	vlt = ~vlt + 1; // binary code now
 
 	// on the sense resistor
-	voltage_drop = 0.000001 * 11.77 * (float)crt;
+	voltage_drop = 0.000001 * 11.77 * (float)vlt;
 
-	return voltage_drop / sense_resistor;
+	return current = voltage_drop / sense_resistor;
+}
+
+float STC3105::readStateOfCharge()
+{
+	uint8_t data[2] = {0, 0}; // TO READ
+	uint16_t vlt = 0;
+	float voltage_drop;
+
+	I2Cdev::readBytes(devAddr, STC3105_REG_CHARGE_LOW, 2, data);
+	vlt = data[1] << 8 | data[0]; // The voltage drop data is in two's complement code
+
+	vlt = ~vlt + 1; // binary code now
+
+	voltage_drop = 0.000001 * 6.7 * float(vlt);
+
+	return state_of_charge = voltage_drop / sense_resistor;
+}
+
+int readNumberOfConversions()
+{
+	uint8_t data[2] = {0, 0}; // TO READ
+
+	I2Cdev::readBytes(devAddr, STC3105_REG_COUNTER_LOW, 2, data);
+
+	return number_of_conversions = data[1] << 8 | data[0];
+}
+
+uint16_t STC3105::readStateOfChargeBase()
+{
+	uint8_t data[2] = {0, 0}; // TO READ
+	I2Cdev::readBytes(devAddr, STC3105_REG_SOC_BASE_LOW, 2, data);
+
+	return data[1] << 8 | data[0];
+}
+
+void STC3105::writeStateOfChargeBase(uint16_t data)
+{
+	uint8_t d[2] = {0, 0}; // To write
+
+	d[0] = data;
+	d[1] = data >> 8;
+
+	I2Cdev::writeBytes(devAddr, STC3105_REG_SOC_BASE_LOW, 2, data);
 }
 
 float STC3105::getVoltage()
@@ -149,6 +194,16 @@ float STC3105::getVoltage()
 float STC3105::getCurrent()
 {
 	return current;
+}
+
+float STC3105::getStateOfCharge()
+{
+	return state_of_charge;
+}
+
+int STC3105::getNumberOfConversions()
+{
+	return number_of_conversions;
 }
 
 int main()
