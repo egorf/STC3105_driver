@@ -112,6 +112,28 @@ bool STC3105::currentUpdated()
 	return data ? true : false;	
 }
 
+// Battery voltage relax counter functions
+int STC3105::readRelaxCounter()
+{
+	uint8_t data = 0;
+	I2Cdev::readByte(devAddr, STC3105_REG_RELAX_COUNT, &data);
+
+	return data;
+}
+
+int STC3105::readRelaxCounterCurrentThreshold()
+{
+	uint8_t data = 0;
+	I2Cdev::readByte(devAddr, STC3105_REG_CURRENT_THRES, &data);
+
+	return data;	
+}
+
+void STC3105::setRelaxCounterCurrentThreshold(uint8_t data)
+{
+	I2Cdev::writeByte(devAddr, STC3105_REG_CURRENT_THRES, data);
+}
+
 // DATA functions
 float STC3105::readVoltage()
 {
@@ -159,7 +181,7 @@ float STC3105::readStateOfCharge()
 	return state_of_charge = voltage_drop / sense_resistor;
 }
 
-int readNumberOfConversions()
+int STC3105::readNumberOfConversions()
 {
 	uint8_t data[2] = {0, 0}; // TO READ
 
@@ -176,14 +198,14 @@ uint16_t STC3105::readStateOfChargeBase()
 	return data[1] << 8 | data[0];
 }
 
-void STC3105::writeStateOfChargeBase(uint16_t data)
+void STC3105::setStateOfChargeBase(uint16_t data)
 {
 	uint8_t d[2] = {0, 0}; // To write
 
 	d[0] = data;
 	d[1] = data >> 8;
 
-	I2Cdev::writeBytes(devAddr, STC3105_REG_SOC_BASE_LOW, 2, data);
+	I2Cdev::writeBytes(devAddr, STC3105_REG_SOC_BASE_LOW, 2, d);
 }
 
 float STC3105::getVoltage()
@@ -204,24 +226,4 @@ float STC3105::getStateOfCharge()
 int STC3105::getNumberOfConversions()
 {
 	return number_of_conversions;
-}
-
-int main()
-{
-	printf("hello!\n");
-
-	STC3105 stc = STC3105();
-
-	printf("STC connection established: %d\n", stc.testConnection());
-
-	stc.initialize();
-
-	while (1)
-	{
-		stc.readVoltage();
-		stc.readCurrent();
-		printf("Voltage = %.3f\n", stc.getVoltage());
-		printf("Current = %.3f\n", stc.getCurrent());
-		sleep(1);
-	}
 }

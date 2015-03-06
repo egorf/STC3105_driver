@@ -1,5 +1,3 @@
-#include <stdio.h>
-#include <unistd.h>
 #include "I2Cdev.h"
 
 #define STC3105_DEFAULT_ADDRESS 	0x70
@@ -62,6 +60,11 @@ class STC3105 {
 		bool voltageUpdated(); // check if voltage has been updated since the last read
 		bool currentUpdated(); // check if current has been updated since the last read
 
+		// Battery voltage relax counter functions
+		int readRelaxCounter();
+		int readRelaxCounterCurrentThreshold();
+		void setRelaxCounterCurrentThreshold(uint8_t data);
+
 		// Data functions
 		float readVoltage(); // Info updated every 4 seconds with 2.44 mV resolution
 		float readCurrent(); // Info updated every second with 11.77 μV voltage drop resolution
@@ -69,12 +72,14 @@ class STC3105 {
 		int readNumberOfConversions(); // The number of conversions is reset after each powerdown
 
 		uint16_t readStateOfChargeBase();
-		void writeStateOfChargeBase(uint16_t data);
+		void setStateOfChargeBase(uint16_t data);
 
 		float getVoltage();
 		float getCurrent();
 		float getStateOfCharge();
 		int getNumberOfConversions();
+
+
 
 	private:
 		uint8_t devAddr; // default 0x70

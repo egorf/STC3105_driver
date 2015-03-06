@@ -1,7 +1,17 @@
-CC = g++ -Wall
+CC = g++
+CFLAGS = -c -Wall
+LDFLAGS = 
+SOURCES = example.cpp I2Cdev.cpp STC3105.cpp
+OBJECTS = $(SOURCES:.cpp=.o)
+EXECUTABLE = example
 
-all:
-	$(CC) $(INCLUDES) STC3105.cpp I2Cdev.cpp -o testSTC
+all: $(SOURCES) $(EXECUTABLE)
+
+$(EXECUTABLE): $(OBJECTS)
+	$(CC) $(LDFLAGS) $(OBJECTS) -o $@
+
+.cpp.o:
+	$(CC) $(CFLAGS) $< -o $@
 
 clean:
-	rm testSTC
+	rm *o $(EXECUTABLE)
