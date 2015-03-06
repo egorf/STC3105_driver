@@ -21,6 +21,7 @@ void STC3105::initialize()
 	enableOperatingMode();
 }
 
+// MODE REG functions
 void STC3105::enableOperatingMode(bool enable)
 {
 	I2Cdev::writeBit(devAddr, STC3105_REG_MODE, 4, enable ? 1 : 0);
@@ -36,6 +37,82 @@ void STC3105::enableAlarm(bool enable)
 	I2Cdev::writeBit(devAddr, STC3105_REG_MODE, 3, enable ? 1 : 0);
 }
 
+// CTRL REG functions
+// Alarm
+void STC3105::enableAlarmPin(bool enable)
+{
+	I2Cdev::writeBit(devAddr, STC3105_REG_CTRL, 1, enable ? 1 : 0);
+}
+
+bool STC3105::checkAlarmPin()
+{
+	uint8_t data = 0;
+	I2Cdev::readBit(devAddr, STC3105_REG_CTRL, 1, &data);
+
+	return data ? true : false;
+}
+
+bool STC3105::checkLowVoltageReg()
+{
+	uint8_t data = 0;
+	I2Cdev::readBit(devAddr, STC3105_REG_CTRL, 6, &data);
+
+	return data ? true : false;	
+}
+
+void STC3105::clearLowVoltageReg()
+{
+	I2Cdev::writeBit(devAddr, STC3105_REG_CTRL, 6, 0);
+}
+
+bool STC3105::checkLowSOCReg()
+{
+	uint8_t data = 0;
+	I2Cdev::readBit(devAddr, STC3105_REG_CTRL, 5, &data);
+
+	return data ? true : false;	
+}
+
+void STC3105::clearLowSOCReg()
+{
+	I2Cdev::writeBit(devAddr, STC3105_REG_CTRL, 5, 0);
+}
+
+void STC3105::reset()
+{
+	I2Cdev::writeBit(devAddr, STC3105_REG_CTRL, 1, 0);	
+}
+
+void STC3105::soft_reset(bool enable)
+{
+	I2Cdev::writeBit(devAddr, STC3105_REG_CTRL, 4, enable ? 1 : 0);		
+} 
+
+bool STC3105::readPowerOnReset()
+{
+	uint8_t data = 0;
+	I2Cdev::readBit(devAddr, STC3105_REG_CTRL, 4, &data);
+
+	return data ? true : false;		
+}
+
+// Updated? functions
+bool STC3105::voltageUpdated()
+{
+	uint8_t data = 0;
+	I2Cdev::readBit(devAddr, STC3105_REG_CTRL, 3, &data);
+
+	return data ? true : false;		
+}
+bool STC3105::currentUpdated()
+{
+	uint8_t data = 0;
+	I2Cdev::readBit(devAddr, STC3105_REG_CTRL, 2, &data);
+
+	return data ? true : false;	
+}
+
+// DATA functions
 float STC3105::readVoltage()
 {
 	uint8_t data[2] = {0, 0}; // TO READ
@@ -61,7 +138,7 @@ float STC3105::readCurrent()
 	// on the sense resistor
 	voltage_drop = 0.000001 * 11.77 * (float)crt;
 
-	return current / sense_resistor;
+	return voltage_drop / sense_resistor;
 }
 
 float STC3105::getVoltage()

@@ -44,7 +44,6 @@ class STC3105 {
 
 		// CONTROL REGISTER
 		// Alarm functions
-		// TODO
 		void enableAlarmPin(bool enable = true); // Enables alarm driven pin
 		bool checkAlarmPin(); // Check alarm pin state, LOW STATE MEANS ALARM!!!
 		bool checkLowVoltageReg(); // Check alarm state for low battery voltage
@@ -53,16 +52,17 @@ class STC3105 {
 		void clearLowSOCReg(); // Clear low State-Of-Charge alarm flag
 
 		// Reset functions
-		// TODO
 		void reset(); // resets the charge accumulator and conversion counter
-		void soft_reset(bool enable = true); // assert the soft-reset and the Power-On-Reset detection bit 
-		bool readPowerOnReset(); // read Power-On-Reset state
+		void soft_reset(bool enable = true); // assert the soft-reset and the Power-On-Reset detection bit
+
+		// read Power-On-Reset state. 
+		bool readPowerOnReset(); // Check if the reset occured, all the settings are reset to default
 
 		// Data updated?
-		// TODO
 		bool voltageUpdated(); // check if voltage has been updated since the last read
-		bool currentUpdated(); // check if current has been updated since the last read d
+		bool currentUpdated(); // check if current has been updated since the last read
 
+		// Data functions
 		float readVoltage(); // Info updated every 4 seconds with 2.44 mV resolution
 		float readCurrent(); // Info updated every 0.5 seconds with 11.77 μV resolution
 
